@@ -34,7 +34,13 @@ services:
     #     arguments:
     #         $someArgument: 'some_value'
 
-    app.command.stock_setup:
-        class: AppBundle\Command\SetupStockCommand
+    AppBundle\Command\SetupStockCommand:
+        arguments:
+            $rootDir: "%kernel.root_dir%"
+            $em: "@doctrine.orm.default_entity_manager"
         tags:
-            - { name: console.command }
+             - { name: console.command }
+
+    app.command.stock_setup:
+          alias: AppBundle\Command\SetupStockCommand
+          public: true
