@@ -31,6 +31,13 @@ class Stock
     /**
      * @var string
      *
+     * @ORM\Column(name="file", type="string")
+     */
+    private $file;
+
+    /**
+     * @var string
+     *
      * @ORM\Column(name="filename", type="string", length=255)
      */
     private $filename;
@@ -85,6 +92,23 @@ class Stock
 
         return $this;
     }
+
+    /**
+     * @return string
+     */
+    public function getFile()
+    {
+        return $this->file;
+    }
+
+    /**
+     * @param string $file
+     */
+    public function setFile($file)
+    {
+        $this->file = $file;
+    }
+
 
     /**
      * Set filename
