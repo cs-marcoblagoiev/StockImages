@@ -5,9 +5,19 @@ namespace spec\AppBundle\Service;
 use AppBundle\Service\FileMover;
 use PhpSpec\ObjectBehavior;
 use Prophecy\Argument;
+use Symfony\Component\Filesystem\Filesystem;
 
 class FileMoverSpec extends ObjectBehavior
 {
+    private $filesystem;
+
+    function let(Filesystem $fs)
+    {
+        $this->filesystem = $fs;
+        
+        $this->beConstructedWith($fs);
+    }
+
     function it_is_initializable()
     {
         $this->shouldHaveType(FileMover::class);
@@ -19,5 +29,7 @@ class FileMoverSpec extends ObjectBehavior
         $newLocation = "/some/fake/new/path";
 
         $this->move($currentLocation, $newLocation)->shouldReturn(true);
+
+        $this->filesystem->rename($currentLocation, $newLocation)->shouldHaveBeenCalled();
     }
 }

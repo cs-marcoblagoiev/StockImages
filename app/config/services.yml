@@ -44,3 +44,8 @@ services:
     app.command.stock_setup:
           alias: AppBundle\Command\SetupStockCommand
           public: true
+
+    app.service.file_mover:
+        class: AppBundle\Service\FileMover
+        arguments:
+          - "@filesystem"
