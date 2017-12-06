@@ -3,6 +3,7 @@
 namespace AppBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 /**
  * Stock
@@ -29,9 +30,7 @@ class Stock
     private $category;
 
     /**
-     * @var string
-     *
-     * @ORM\Column(name="file", type="string")
+     * @var UploadedFile
      */
     private $file;
 
@@ -94,7 +93,7 @@ class Stock
     }
 
     /**
-     * @return string
+     * @return UploadedFile
      */
     public function getFile()
     {
@@ -102,9 +101,9 @@ class Stock
     }
 
     /**
-     * @param string $file
+     * @param UploadedFile $file
      */
-    public function setFile($file)
+    public function setFile(UploadedFile $file)
     {
         $this->file = $file;
     }

@@ -2,7 +2,7 @@
 
 namespace spec\AppBundle\Service;
 
-use AppBundle\Service\FileMover;
+use AppBundle\Service\LocalFilesystemFileMover;
 use PhpSpec\ObjectBehavior;
 use Prophecy\Argument;
 use Symfony\Component\Filesystem\Filesystem;
@@ -20,7 +20,7 @@ class FileMoverSpec extends ObjectBehavior
 
     function it_is_initializable()
     {
-        $this->shouldHaveType(FileMover::class);
+        $this->shouldHaveType(LocalFilesystemFileMover::class);
     }
 
     function it_can_move_a_file_from_temporary_to_controlled_storage()

@@ -4,7 +4,7 @@ namespace spec\AppBundle\Event\Listener;
 
 use AppBundle\Entity\Category;
 use AppBundle\Event\Listener\ImageUploadListener;
-use AppBundle\Service\FileMover;
+use AppBundle\Service\LocalFilesystemFileMover;
 use Doctrine\ORM\Event\LifecycleEventArgs;
 use Doctrine\ORM\Event\PreUpdateEventArgs;
 use PhpSpec\ObjectBehavior;
@@ -14,7 +14,7 @@ class ImageUploadListenerSpec extends ObjectBehavior
 {
     private $fileMover;
 
-    function let(FileMover $fileMover)
+    function let(LocalFilesystemFileMover $fileMover)
     {
         $this->beConstructedWith($fileMover);
 

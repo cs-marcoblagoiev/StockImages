@@ -45,7 +45,20 @@ services:
           alias: AppBundle\Command\SetupStockCommand
           public: true
 
-    app.service.file_mover:
-        class: AppBundle\Service\FileMover
+    app.service.local_filesystem_file_mover:
+        class: AppBundle\Service\LocalFilesystemFileMover
         arguments:
           - "@filesystem"
+
+    app.service.image_file_path_helper:
+        class: AppBundle\Service\ImageFilePathHelper
+        arguments:
+          - "%kernel.root_dir%/../web/images/"
+
+    app.doctrine_event_listener.image_upload_listener:
+        class: AppBundle\Event\Listener\ImageUploadListener
+        arguments:
+          - "@app.service.local_filesystem_file_mover"
+          - "@app.service.image_file_path_helper"
+        tags:
+          - { name: doctrine.event_listener, event: prePersist }
