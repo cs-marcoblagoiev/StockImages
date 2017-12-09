@@ -3,12 +3,15 @@
 namespace spec\AppBundle\Event\Listener;
 
 use AppBundle\Entity\Category;
+use AppBundle\Entity\Stock;
 use AppBundle\Event\Listener\ImageUploadListener;
 use AppBundle\Service\FileMover;
+use AppBundle\Model\FileInterface;
 use Doctrine\ORM\Event\LifecycleEventArgs;
 use Doctrine\ORM\Event\PreUpdateEventArgs;
 use PhpSpec\ObjectBehavior;
 use Prophecy\Argument;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class ImageUploadListenerSpec extends ObjectBehavior
 {
@@ -40,18 +43,23 @@ class ImageUploadListenerSpec extends ObjectBehavior
         )->shouldNotHaveBeenCalled();
     }
 
-    function it_can_prePersist(LifecycleEventArgs $eventArgs)
+    function it_can_prePersist(LifecycleEventArgs $eventArgs,
+                               FileInterface $file)
     {
-        // setup - not actually used in our tests just yet
         $fakeTempPath = '/tmp/some.file';
-        $fakeRealPath = '/path/to/my/project';
+        $fakeRealPath = '/path/to/my/project/some.file';
 
-        // the method we are testing
-        $this->prePersist($eventArgs);
+        $file->getExistingFilePath()->willReturn($fakeTempPath);
+        $file->getNewFilePath()->willReturn($fakeRealPath);
 
-        // what we expect to have happened, if this test is passing
+        $image = new Stock();
+        $image->setFile($file->getWrappedObject());
+
+        $eventArgs->getEntity()->willReturn($image);
+
+        $this->prePersist($eventArgs)->shouldReturn(true);
+
         $this->fileMover->move($fakeTempPath, $fakeRealPath)->shouldHaveBeenCalled();
-
 
     }
 
