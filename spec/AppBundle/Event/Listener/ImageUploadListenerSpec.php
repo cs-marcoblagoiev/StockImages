@@ -7,6 +7,7 @@ use AppBundle\Entity\Stock;
 use AppBundle\Event\Listener\ImageUploadListener;
 use AppBundle\Service\FileMover;
 use AppBundle\Model\FileInterface;
+use AppBundle\Service\ImageFilePathHelper;
 use Doctrine\ORM\Event\LifecycleEventArgs;
 use Doctrine\ORM\Event\PreUpdateEventArgs;
 use PhpSpec\ObjectBehavior;
@@ -16,12 +17,14 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 class ImageUploadListenerSpec extends ObjectBehavior
 {
     private $fileMover;
+    private $imageFilePathHelper;
 
-    function let(FileMover $fileMover)
+    function let(FileMover $fileMover, ImageFilePathHelper $imageFilePathHelper)
     {
         $this->beConstructedWith($fileMover);
 
         $this->fileMover = $fileMover;
+        $this->imageFilePathHelper = $imageFilePathHelper;
     }
 
     function it_is_initializable()
@@ -47,20 +50,27 @@ class ImageUploadListenerSpec extends ObjectBehavior
                                FileInterface $file)
     {
         $fakeTempPath = '/tmp/some.file';
-        $fakeRealPath = '/path/to/my/project/some.file';
+        $fakeFilename = 'some.file';
 
-        $file->getExistingFilePath()->willReturn($fakeTempPath);
-        $file->getNewFilePath()->willReturn($fakeRealPath);
+        $file->getPathname()->willReturn($fakeTempPath);
+        $file->getFilename()->willReturn($fakeFilename);
 
-        $image = new Stock();
-        $image->setFile($file->getWrappedObject());
+        $wallpaper = new Stock();
+        $wallpaper->setFile($file->getWrappedObject());
 
-        $eventArgs->getEntity()->willReturn($image);
+        $eventArgs->getEntity()->willReturn($wallpaper);
+
+        $fakeNewFileLocation = '/some/new/fake/' . $fakeFilename;
+        $this
+            ->wallpaperFilePathHelper
+            ->getNewfilePath($fakeFilename)
+            ->willReturn($fakeNewFileLocation)
+        ;
 
         $this->prePersist($eventArgs)->shouldReturn(true);
 
-        $this->fileMover->move($fakeTempPath, $fakeRealPath)->shouldHaveBeenCalled();
 
+        $this->fileMover->move($fakeTempPath, $fakeNewFileLocation)->shouldHaveBeenCalled();
     }
 
     function it_can_preUpdate(PreUpdateEventArgs $eventArgs)

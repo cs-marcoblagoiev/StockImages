@@ -2,6 +2,7 @@
 
 namespace AppBundle\Entity;
 
+use AppBundle\Model\FileInterface;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -29,7 +30,7 @@ class Stock
     private $category;
 
     /**
-     * @var string
+     * @var FileInterface
      */
     private $file;
 
@@ -92,7 +93,7 @@ class Stock
     }
 
     /**
-     * @return string
+     * @return FileInterface
      */
     public function getFile()
     {
@@ -100,9 +101,10 @@ class Stock
     }
 
     /**
-     * @param string $file
+     * @param FileInterface $file
+     * @return Stock
      */
-    public function setFile($file)
+    public function setFile(FileInterface $file)
     {
         $this->file = $file;
     }
