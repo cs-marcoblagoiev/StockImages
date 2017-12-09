@@ -30,8 +30,6 @@ class Stock
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="file", type="string")
      */
     private $file;
 
