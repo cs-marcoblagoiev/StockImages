@@ -7,6 +7,7 @@ use AppBundle\Entity\Stock;
 use AppBundle\Event\Listener\ImageUploadListener;
 use AppBundle\Service\FileMover;
 use AppBundle\Model\FileInterface;
+use AppBundle\Service\ImageFileDimensionsHelper;
 use AppBundle\Service\ImageFilePathHelper;
 use Doctrine\ORM\Event\LifecycleEventArgs;
 use Doctrine\ORM\Event\PreUpdateEventArgs;
@@ -18,13 +19,19 @@ class ImageUploadListenerSpec extends ObjectBehavior
 {
     private $fileMover;
     private $imageFilePathHelper;
+    private $imageFileDimensionsHelper;
 
-    function let(FileMover $fileMover, ImageFilePathHelper $imageFilePathHelper)
+    function let(
+        FileMover $fileMover,
+        ImageFilePathHelper $imageFilePathHelper,
+        ImageFileDimensionsHelper $imageFileDimensionsHelper
+    )
     {
-        $this->beConstructedWith($fileMover);
+        $this->beConstructedWith($fileMover, $imageFilePathHelper, $imageFileDimensionsHelper);
 
         $this->fileMover = $fileMover;
         $this->imageFilePathHelper = $imageFilePathHelper;
+        $this->imageFileDimensionsHelper = $imageFileDimensionsHelper;
     }
 
     function it_is_initializable()
@@ -62,15 +69,23 @@ class ImageUploadListenerSpec extends ObjectBehavior
 
         $fakeNewFileLocation = '/some/new/fake/' . $fakeFilename;
         $this
-            ->wallpaperFilePathHelper
-            ->getNewfilePath($fakeFilename)
+            ->imageFilePathHelper
+            ->getNewFilePath($fakeFilename)
             ->willReturn($fakeNewFileLocation)
         ;
 
-        $this->prePersist($eventArgs)->shouldReturn(true);
+        $this->imageFileDimensionsHelper->setImageFilePath($fakeNewFileLocation)->shouldBeCalled();
+        $this->imageFileDimensionsHelper->getWidth()->willReturn(1024);
+        $this->imageFileDimensionsHelper->getHeight()->willReturn(768);
 
+        $outcome = $this->prePersist($eventArgs);
 
         $this->fileMover->move($fakeTempPath, $fakeNewFileLocation)->shouldHaveBeenCalled();
+
+        $outcome->shouldBeAnInstanceOf(Stock::class);
+        $outcome->getFilename()->shouldReturn($fakeFilename);
+        $outcome->getWidth()->shouldReturn(1024);
+        $outcome->getHeight()->shouldReturn(768);
     }
 
     function it_can_preUpdate(PreUpdateEventArgs $eventArgs)

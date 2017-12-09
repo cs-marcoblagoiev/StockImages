@@ -4,6 +4,7 @@ namespace AppBundle\Event\Listener;
 
 use AppBundle\Entity\Stock;
 use AppBundle\Service\FileMover;
+use AppBundle\Service\ImageFileDimensionsHelper;
 use AppBundle\Service\ImageFilePathHelper;
 use Doctrine\ORM\Event\LifecycleEventArgs;
 use Doctrine\ORM\Event\PreUpdateEventArgs;
@@ -18,17 +19,26 @@ class ImageUploadListener
      * @var ImageFilePathHelper
      */
     private $imageFilePathHelper;
+    /**
+     * @var ImageFileDimensionsHelper
+     */
+    private $imageFileDimensionsHelper;
 
-    public function __construct(FileMover $fileMover, ImageFilePathHelper $imageFilePathHelper)
+    public function __construct(
+        FileMover $fileMover,
+        ImageFilePathHelper $imageFilePathHelper,
+        ImageFileDimensionsHelper $imageFileDimensionsHelper
+    )
     {
         $this->fileMover = $fileMover;
         $this->imageFilePathHelper = $imageFilePathHelper;
+        $this->imageFileDimensionsHelper = $imageFileDimensionsHelper;
     }
 
     public function prePersist(LifecycleEventArgs $eventArgs)
     {
         $entity = $eventArgs->getEntity();
-        // if not Wallpaper entity, return false
+        // if not Stock entity, return false
         if (false === $entity instanceof Stock) {
             return false;
         }
@@ -46,7 +56,20 @@ class ImageUploadListener
             $file->getPathname(),
             $newFileLocation
         );
-        return true;
+
+        $this->imageFileDimensionsHelper->setImageFilePath($newFileLocation);
+        $entity
+            ->setFilename(
+                $file->getFilename()
+            )
+            ->setHeight(
+                $this->imageFileDimensionsHelper->getHeight()
+            )
+            ->setWidth(
+                $this->imageFileDimensionsHelper->getWidth()
+            )
+        ;
+        return $entity;
     }
 
     public function preUpdate(PreUpdateEventArgs $eventArgs)
