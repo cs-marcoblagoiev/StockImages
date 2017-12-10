@@ -107,6 +107,8 @@ class Stock
     public function setFile(FileInterface $file)
     {
         $this->file = $file;
+
+        return $this;
     }
 
 
