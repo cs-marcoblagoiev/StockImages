@@ -9,7 +9,7 @@ use AppBundle\Service\ImageFilePathHelper;
 use Doctrine\ORM\Event\LifecycleEventArgs;
 use Doctrine\ORM\Event\PreUpdateEventArgs;
 
-class ImageUploadListener
+class ImageListener
 {
     /**
      * @var FileMover
@@ -37,7 +37,20 @@ class ImageUploadListener
 
     public function prePersist(LifecycleEventArgs $eventArgs)
     {
-        $entity = $eventArgs->getEntity();
+        return $this->upload(
+            $eventArgs->getEntity()
+        );
+    }
+
+    public function preUpdate(PreUpdateEventArgs $eventArgs)
+    {
+        return $this->upload(
+            $eventArgs->getEntity()
+        );
+    }
+
+    private function upload($entity)
+    {
         // if not Stock entity, return false
         if (false === $entity instanceof Stock) {
             return false;
@@ -70,10 +83,5 @@ class ImageUploadListener
             )
         ;
         return $entity;
-    }
-
-    public function preUpdate(PreUpdateEventArgs $eventArgs)
-    {
-
     }
 }

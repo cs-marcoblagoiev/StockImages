@@ -59,11 +59,12 @@ services:
         class: AppBundle\Service\ImageFileDimensionsHelper
 
 
-    app.event.listener.image_upload_listener:
-        class: AppBundle\Event\Listener\ImageUploadListener
+    app.event.listener.image_listener:
+        class: AppBundle\Event\Listener\ImageListener
         arguments:
             - "@app.service.file_mover"
             - "@app.service.image_file_path_helper"
             - "@app.service.image_file_dimensions_helper"
         tags:
             - { name: doctrine.event_listener, event: prePersist }
+            - { name: doctrine.event_listener, event: preUpdate }

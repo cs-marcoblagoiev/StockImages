@@ -4,7 +4,7 @@ namespace spec\AppBundle\Event\Listener;
 
 use AppBundle\Entity\Category;
 use AppBundle\Entity\Stock;
-use AppBundle\Event\Listener\ImageUploadListener;
+use AppBundle\Event\Listener\ImageListener;
 use AppBundle\Service\FileMover;
 use AppBundle\Model\FileInterface;
 use AppBundle\Service\ImageFileDimensionsHelper;
@@ -13,9 +13,8 @@ use Doctrine\ORM\Event\LifecycleEventArgs;
 use Doctrine\ORM\Event\PreUpdateEventArgs;
 use PhpSpec\ObjectBehavior;
 use Prophecy\Argument;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
 
-class ImageUploadListenerSpec extends ObjectBehavior
+class ImageListenerSpec extends ObjectBehavior
 {
     private $fileMover;
     private $imageFilePathHelper;
@@ -36,7 +35,7 @@ class ImageUploadListenerSpec extends ObjectBehavior
 
     function it_is_initializable()
     {
-        $this->shouldHaveType(ImageUploadListener::class);
+        $this->shouldHaveType(ImageListener::class);
     }
 
     function it_returns_early_if_prePersist_LifecycleEventArgs_entity_is_not_a_Wallpaper_instance(
@@ -88,8 +87,53 @@ class ImageUploadListenerSpec extends ObjectBehavior
         $outcome->getHeight()->shouldReturn(768);
     }
 
-    function it_can_preUpdate(PreUpdateEventArgs $eventArgs)
+    function it_returns_early_if_preUpdate_LifecycleEventArgs_entity_is_not_a_Wallpaper_instance(
+        PreUpdateEventArgs $eventArgs
+    )
     {
-        $this->preUpdate($eventArgs);
+        $eventArgs->getEntity()->willReturn(new Category());
+
+        $this->preUpdate($eventArgs)->shouldReturn(false);
+
+        $this->fileMover->move(
+            Argument::any(),
+            Argument::any()
+        )->shouldNotHaveBeenCalled();
+    }
+
+    function it_can_preUpdate(
+        PreUpdateEventArgs $eventArgs,
+        FileInterface $file)
+    {
+        $fakeTempPath = '/tmp/some.file';
+        $fakeFilename = 'some.file';
+
+        $file->getPathname()->willReturn($fakeTempPath);
+        $file->getFilename()->willReturn($fakeFilename);
+
+        $wallpaper = new Stock();
+        $wallpaper->setFile($file->getWrappedObject());
+
+        $eventArgs->getEntity()->willReturn($wallpaper);
+
+        $fakeNewFileLocation = '/some/new/fake/' . $fakeFilename;
+        $this
+            ->imageFilePathHelper
+            ->getNewFilePath($fakeFilename)
+            ->willReturn($fakeNewFileLocation)
+        ;
+
+        $this->imageFileDimensionsHelper->setImageFilePath($fakeNewFileLocation)->shouldBeCalled();
+        $this->imageFileDimensionsHelper->getWidth()->willReturn(1024);
+        $this->imageFileDimensionsHelper->getHeight()->willReturn(768);
+
+        $outcome = $this->preUpdate($eventArgs);
+
+        $this->fileMover->move($fakeTempPath, $fakeNewFileLocation)->shouldHaveBeenCalled();
+
+        $outcome->shouldBeAnInstanceOf(Stock::class);
+        $outcome->getFilename()->shouldReturn($fakeFilename);
+        $outcome->getWidth()->shouldReturn(1024);
+        $outcome->getHeight()->shouldReturn(768);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace AppBundle\Entity;
 
+use AppBundle\Entity\Traits\Timestampable;
 use AppBundle\Model\FileInterface;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -10,9 +11,12 @@ use Doctrine\ORM\Mapping as ORM;
  *
  * @ORM\Table(name="stock")
  * @ORM\Entity(repositoryClass="AppBundle\Repository\StockRepository")
+ * @ORM\HasLifecycleCallbacks()
  */
 class Stock
 {
+    use Timestampable;
+
     /**
      * @var int
      *
@@ -107,6 +111,10 @@ class Stock
     public function setFile(FileInterface $file)
     {
         $this->file = $file;
+
+        if ($file) {
+            $this->setUpdatedAt();
+        }
 
         return $this;
     }
