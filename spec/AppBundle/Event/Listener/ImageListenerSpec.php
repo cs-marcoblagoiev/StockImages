@@ -136,4 +136,18 @@ class ImageListenerSpec extends ObjectBehavior
         $outcome->getWidth()->shouldReturn(1024);
         $outcome->getHeight()->shouldReturn(768);
     }
+
+    function it_can_preRemove(
+        LifecycleEventArgs $eventArgs,
+        Stock $stock)
+    {
+        $stock->getFilename()->willReturn('fake-filename.jpg');
+        $eventArgs->getEntity()->willReturn($stock);
+
+        $this->preRemove($eventArgs);
+
+        $this->fileDeleter->delete('fake-filename.jpg')->shouldHaveBeenCalled();
+
+        $stock->setFile(null)->shouldHaveBeenCalled();
+    }
 }

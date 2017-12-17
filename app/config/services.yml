@@ -58,6 +58,11 @@ services:
     app.service.image_file_dimensions_helper:
         class: AppBundle\Service\ImageFileDimensionsHelper
 
+    app.service.local_filesystem_file_deleter:
+        class: AppBundle\Service\LocalFilesystemFileDeleter
+        arguments:
+            - "@filesystem"
+            - "%kernel.root_dir%/../web/images"
 
     app.event.listener.image_listener:
         class: AppBundle\Event\Listener\ImageListener
@@ -68,3 +73,4 @@ services:
         tags:
             - { name: doctrine.event_listener, event: prePersist }
             - { name: doctrine.event_listener, event: preUpdate }
+            - { name: doctrine.event_listener, event: preRemove }

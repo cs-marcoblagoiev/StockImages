@@ -84,4 +84,9 @@ class ImageListener
         ;
         return $entity;
     }
+
+    public function preRemove($argument1)
+    {
+        // TODO: write logic here
+    }
 }
